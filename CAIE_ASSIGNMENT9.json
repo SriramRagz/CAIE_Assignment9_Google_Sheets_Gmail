@@ -1,0 +1,137 @@
+{
+  "name": "CAIE ASSIGNMENT9",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        -16
+      ],
+      "id": "335309ce-545e-4afa-8f65-e3097d12449e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "16eNTsxQoNM8jh1C30CkygkN_Z2Ghe1zits19LRhPhvQ",
+          "mode": "list",
+          "cachedResultName": "CAIE_Assignment9_Student_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16eNTsxQoNM8jh1C30CkygkN_Z2Ghe1zits19LRhPhvQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16eNTsxQoNM8jh1C30CkygkN_Z2Ghe1zits19LRhPhvQ/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -368,
+        -16
+      ],
+      "id": "f9ed4f61-2376-4dff-b82c-abc93e6cd709",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5BNeN2iS6EBuNihN",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Get all incoming records from Google Sheets\nconst inputItems = $input.all();\n\n// Remove empty placeholder records\nconst rows = inputItems\n  .map(item => item.json)\n  .filter(data =>\n    data &&\n    (\n      String(data.Name || \"\").trim() !== \"\" ||\n      String(data.Course || \"\").trim() !== \"\" ||\n      String(data.Status || \"\").trim() !== \"\"\n    )\n  );\n\n// Stop the workflow if no valid student records exist\nif (rows.length === 0) {\n  return [];\n}\n\n// Email subject\nconst subject = \"Data Summary from Google Sheet\";\n\n// Format each student record\nconst records = rows.map((data, index) => {\n  return `${index + 1}. Name: ${data.Name}\n   Course: ${data.Course}\n   Status: ${data.Status}`;\n});\n\n// Create the email message\nconst message = `Hi,\n\nHere is the latest data from the sheet:\n\n${records.join(\"\\n\\n\")}\n\nRegards,\nYour Automation Bot`;\n\n// Return one email containing all student records\nreturn [\n  {\n    json: {\n      subject,\n      message\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -16
+      ],
+      "id": "ca5a5a71-bf50-40f6-8c58-ee6122b11224",
+      "name": "Code in JavaScript",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "sendTo": "sriramraghu4@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        -16
+      ],
+      "id": "17b69909-4215-4c8e-83da-ad5af77fd4f4",
+      "name": "Send a message",
+      "webhookId": "6dbda90c-3d18-498a-bf0b-88b64a6d7202",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "fU3bJAGaqItE7N6E",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "41e98c29-bf80-4af8-b020-c559d523a86f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d9d1968989cf41529a392d5b187dbcaf1ab5f0757dda2b57fc5ba66292b8b975"
+  },
+  "nodeGroups": [],
+  "id": "fzjbQNLrJWbteJqE",
+  "tags": []
+}
